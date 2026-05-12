@@ -894,6 +894,20 @@ function syncBeds() {
   recalc();
 }
 
+// Auto-extract 5-digit zip from the Property Address and push into the Rent
+// Calculator's zip field. Matches the LAST 5-digit run in the string so that
+// street numbers like "44102 Main St" don't get mistaken for the zip.
+// ZIP+4 ("44102-1234") is supported — we grab just the 5-digit prefix.
+function syncZip() {
+  const v = $('propAddress').value;
+  if (!v) return;                             // blank → leave zip alone
+  const matches = v.match(/\b\d{5}\b/g);      // all 5-digit runs on word boundaries
+  if (!matches || matches.length === 0) return;
+  const zip = matches[matches.length - 1];    // last match wins (the real zip)
+  $('s8_zip').value = zip;
+  recalc();
+}
+
 // ============================================
 // LIVE CURRENCY FORMATTING for [data-currency] inputs
 // Strips non-digits, formats with $ and commas, preserves caret position
@@ -950,6 +964,8 @@ document.querySelectorAll('input, select').forEach(el => {
 $('propSqft').addEventListener('change', syncSqft);
 $('propBeds').addEventListener('input', syncBeds);
 $('propBeds').addEventListener('change', syncBeds);
+$('propAddress').addEventListener('input', syncZip);
+$('propAddress').addEventListener('change', syncZip);
 
 function resetAll() {
   if (!confirm('Reset all values to defaults?')) return;
